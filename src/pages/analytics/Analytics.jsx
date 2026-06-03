@@ -517,6 +517,8 @@ export const Analytics = () => {
             </div>
           </div>
         </div>
+
+        <div className="flex mt-2 w-full pl-2 pr-2 pb-2"></div>
       </div>
     </div>
   );

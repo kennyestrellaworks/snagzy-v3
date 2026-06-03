@@ -11,9 +11,12 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
 } from "recharts";
 
 import { orders } from "../data/orders";
+import { users } from "../data/users";
 import {
   successfulOrderStatuses,
   pendingOrderStatuses,
@@ -27,7 +30,6 @@ export const Dashboard = () => {
   const [selectedDay, setSelectedDay] = useState("All");
 
   const [registryTab, setRegistryTab] = useState("All");
-  // Updated initial visible display constraint to 10
   const [visibleCount, setVisibleCount] = useState(10);
 
   const uniqueYears = useMemo(() => {
@@ -56,13 +58,13 @@ export const Dashboard = () => {
     setSelectedYear(e.target.value);
     setSelectedMonth("All");
     setSelectedDay("All");
-    setVisibleCount(10); // Reset to 10 on filter change
+    setVisibleCount(10);
   };
 
   const handleMonthChange = (e) => {
     setSelectedMonth(e.target.value);
     setSelectedDay("All");
-    setVisibleCount(10); // Reset to 10 on filter change
+    setVisibleCount(10);
   };
 
   const getStatusBadgeClass = (slug) => {
@@ -75,6 +77,7 @@ export const Dashboard = () => {
     }
   };
 
+  // --- EXISTING ORDERS CALCULATION ---
   const dashboardData = useMemo(() => {
     const filteredOrders = orders.filter((order) => {
       if (!order.createdAt) return false;
@@ -153,6 +156,79 @@ export const Dashboard = () => {
     };
   }, [selectedYear, selectedMonth, selectedDay]);
 
+  // --- NEW USER DATA CALCULATIONS ---
+  const userMetrics = useMemo(() => {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const monthlyCounts = {};
+    months.forEach((m) => (monthlyCounts[m] = 0));
+
+    let onlineCount = 0;
+    let offlineCount = 0;
+    const jobCounts = {};
+
+    users.forEach((user) => {
+      // 1. Live Heartbeat Session calculations
+      if (user.isOnline) onlineCount++;
+      else offlineCount++;
+
+      // 2. Aggregate Professional Occupations
+      if (user.jobTitle) {
+        jobCounts[user.jobTitle] = (jobCounts[user.jobTitle] || 0) + 1;
+      }
+
+      // 3. Growth Trend Over Time (Respects Year Filter)
+      if (user.createdAt) {
+        const date = new Date(user.createdAt);
+        const userYear = date.getFullYear().toString();
+
+        if (selectedYear === "All" || selectedYear === userYear) {
+          const monthName = months[date.getMonth()];
+          monthlyCounts[monthName] += 1;
+        }
+      }
+    });
+
+    const trendData = months.map((month) => ({
+      name: month.substring(0, 3),
+      "New Signups": monthlyCounts[month],
+    }));
+
+    const jobData = Object.entries(jobCounts)
+      .map(([job, count]) => ({
+        jobName: job,
+        "Total Users": count,
+      }))
+      .sort((a, b) => b["Total Users"] - a["Total Users"])
+      .slice(0, 5);
+
+    const onlineData = [
+      { name: "Online", value: onlineCount, color: "#10B981" },
+      { name: "Offline", value: offlineCount, color: "#9CA3AF" },
+    ].filter((item) => item.value > 0);
+
+    return {
+      trendData,
+      jobData,
+      onlineData,
+      totalRegisteredUsers: users.length,
+      currentOnlineCount: onlineCount,
+    };
+  }, [selectedYear]);
+
   const registryOrdersList = useMemo(() => {
     return dashboardData.filteredOrdersList.filter((order) => {
       const slug = order.currentStatus?.slug;
@@ -188,11 +264,9 @@ export const Dashboard = () => {
     <div className="flex flex-col w-full bg-white border border-gray-300 rounded-md overflow-hidden">
       <div className="flex w-full z-50">
         <div className="w-full flex flex-1 flex-col p-2">
-          {/* Header */}
           <div className="flex gap-2 justify-between">
             <PageHeader defaultPage="Analytics" type="sidebar-level" />
           </div>
-          {/* Header ends */}
         </div>
       </div>
 
@@ -257,10 +331,11 @@ export const Dashboard = () => {
           </select>
         </div>
       </div>
+
       <div className="flex flex-col w-full overflow-y-auto bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-        <div className="flex flex-col w-full p-2">
+        <div className="flex flex-col w-full p-2 gap-6">
           {/* KPI Cards Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
             <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm">
               <span className="text-sm font-medium text-gray-500">
                 Total Orders
@@ -293,53 +368,237 @@ export const Dashboard = () => {
                 ${dashboardData.lostRevenue.toFixed(2)}
               </div>
             </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-            {/* Pie Chart Card */}
-            <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                Lifecycle Distribution
-              </h3>
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={dashboardData.pieChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={70}
-                      label
-                    >
-                      {dashboardData.pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+            <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm">
+              <span className="text-sm font-medium text-gray-500">
+                Total Userbase
+              </span>
+              <div className="text-2xl font-bold text-indigo-600 mt-1">
+                {userMetrics.totalRegisteredUsers}
+                <span className="text-xs font-normal text-emerald-600 ml-1.5">
+                  ({userMetrics.currentOnlineCount} live)
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Bar Chart Card */}
-            <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                Status Breakdown
-              </h3>
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardData.barChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="status" tick={{ fontSize: 12 }} />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Bar dataKey="Count" fill="#4F46E5" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* Business & Order Performance Charts Section */}
+          <div>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">
+              Order Performance Insights
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+              {/* Pie Chart Card */}
+              <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                  Lifecycle Distribution
+                </h3>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={dashboardData.pieChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        label
+                      >
+                        {dashboardData.pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Bar Chart Card */}
+              <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                  Status Breakdown
+                </h3>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dashboardData.barChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="status" tick={{ fontSize: 12 }} />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip />
+                      <Bar
+                        dataKey="Count"
+                        fill="#4F46E5"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* User Engagement Charts Section */}
+          <div>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">
+              User Base Analytics
+            </h2>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full">
+              {/* User Signups Trend */}
+              <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                  Registration Growth
+                </h3>
+                <p className="text-xs text-gray-400 mb-3">
+                  Profile trends for year: {selectedYear}
+                </p>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={userMetrics.trendData}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="userSignupGrad"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#6366F1"
+                            stopOpacity={0.2}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#6366F1"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#F3F4F6"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 11 }}
+                        stroke="#9CA3AF"
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        stroke="#9CA3AF"
+                        allowDecimals={false}
+                      />
+                      <Tooltip contentStyle={{ fontSize: "12px" }} />
+                      <Area
+                        type="monotone"
+                        dataKey="New Signups"
+                        stroke="#6366F1"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#userSignupGrad)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Top Niche User Occupations */}
+              <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                  Top User Demographics
+                </h3>
+                <p className="text-xs text-gray-400 mb-3">
+                  Top 5 professional job spaces
+                </p>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      layout="vertical"
+                      data={userMetrics.jobData}
+                      margin={{ top: 5, right: 10, left: 15, bottom: 5 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        horizontal={false}
+                        stroke="#F3F4F6"
+                      />
+                      <XAxis
+                        type="number"
+                        tick={{ fontSize: 11 }}
+                        stroke="#9CA3AF"
+                        allowDecimals={false}
+                      />
+                      <YAxis
+                        dataKey="jobName"
+                        type="category"
+                        tick={{ fontSize: 10 }}
+                        stroke="#9CA3AF"
+                        width={75}
+                      />
+                      <Tooltip contentStyle={{ fontSize: "12px" }} />
+                      <Bar
+                        dataKey="Total Users"
+                        fill="#3B82F6"
+                        radius={[0, 4, 4, 0]}
+                        maxBarSize={20}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Heartbeat Status (Online vs Offline) */}
+              <div className="bg-white p-4 border border-gray-200 rounded-md shadow-sm flex flex-col h-80">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                  Session Status
+                </h3>
+                <p className="text-xs text-gray-400 mb-1">
+                  Real-time user availability breakdown
+                </p>
+                <div className="flex-1 min-h-0 flex flex-col justify-center items-center relative">
+                  <ResponsiveContainer width="100%" height="80%">
+                    <PieChart>
+                      <Pie
+                        data={userMetrics.onlineData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={75}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {userMetrics.onlineData.map((entry, index) => (
+                          <Cell
+                            key={`cell-online-${index}`}
+                            fill={entry.color}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  {/* Customized Inline Legend layout */}
+                  <div className="flex gap-4 text-xs font-medium justify-center mt-2">
+                    {userMetrics.onlineData.map((entry, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full inline-block"
+                          style={{ backgroundColor: entry.color }}
+                        ></span>
+                        <span className="text-gray-600">
+                          {entry.name}: {entry.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -359,7 +618,7 @@ export const Dashboard = () => {
                       type="button"
                       onClick={() => {
                         setRegistryTab(tab);
-                        setVisibleCount(10); // Resets window display size to 10 items
+                        setVisibleCount(10);
                       }}
                       className={`px-3 py-1.5 rounded-md transition-all duration-150 ${
                         registryTab === tab
@@ -420,7 +679,7 @@ export const Dashboard = () => {
               </table>
             </div>
 
-            {/* Load More Pagination Section - Loads 10 items incrementally */}
+            {/* Load More Pagination Section */}
             {registryOrdersList.length > visibleCount && (
               <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-center">
                 <button

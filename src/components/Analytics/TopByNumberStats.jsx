@@ -75,7 +75,7 @@ export const TopByNumberStats = ({
           <div className="w-full p-3 bg-white border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden">
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-slate-800">
+                <h2 className="text-md font-bold text-slate-800">
                   Top Selling Products
                 </h2>
                 <p className="text-sm text-slate-500">
@@ -145,7 +145,7 @@ export const TopByNumberStats = ({
           <div className="w-full p-3 bg-white border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden">
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-slate-800">
+                <h2 className="text-md font-bold text-slate-800">
                   Top Customers
                 </h2>
                 <p className="text-sm text-slate-500">
@@ -216,7 +216,7 @@ export const TopByNumberStats = ({
           <div className="w-full p-3 bg-white border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden">
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-slate-800">
+                <h2 className="text-md font-bold text-slate-800">
                   Top Performing Stores
                 </h2>
                 <p className="text-sm text-slate-500">

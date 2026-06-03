@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CustomTooltip } from "./CustomTooltip";
+import { CustomTooltipV1 } from "./CustomTooltip";
 
 export const ShippingMethodStats = ({ analyticsData }) => {
   const { topAnalyticsValue } = useTopAnalytics();
@@ -22,7 +22,7 @@ export const ShippingMethodStats = ({ analyticsData }) => {
   return (
     <div className="flex flex-col w-full p-4">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Shipping Methods</h2>
+        <h2 className="text-md font-bold text-gray-900">Shipping Methods</h2>
         <p className="text-sm text-gray-500 mt-0.5">
           Distribution by delivery method
         </p>
@@ -51,7 +51,7 @@ export const ShippingMethodStats = ({ analyticsData }) => {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltipV1 />} />
                 <Bar
                   dataKey="value"
                   name="Orders"

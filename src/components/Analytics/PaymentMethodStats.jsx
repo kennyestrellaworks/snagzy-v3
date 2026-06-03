@@ -1,7 +1,7 @@
 import React from "react";
 import { useTopAnalytics } from "../../context/TopAnalyticsContext";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { CustomTooltip } from "./CustomTooltip";
+import { CustomTooltipV1 } from "./CustomTooltip";
 
 export const PaymentMethodStats = ({ analyticsData }) => {
   const { topAnalyticsValue } = useTopAnalytics();
@@ -20,7 +20,7 @@ export const PaymentMethodStats = ({ analyticsData }) => {
   return (
     <div className="flex flex-col w-full p-4">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Payment Methods</h2>
+        <h2 className="text-md font-bold text-gray-900">Payment Methods</h2>
         <p className="text-sm text-gray-500 mt-0.5">
           Breakdown by payment provider
         </p>
@@ -48,7 +48,7 @@ export const PaymentMethodStats = ({ analyticsData }) => {
                     />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltipV1 />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
