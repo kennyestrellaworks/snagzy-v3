@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useData } from "../../context/DataContext";
 import { IoIosArrowDown } from "../../components/SVG";
 import {
@@ -32,6 +32,11 @@ import { dateFormatter } from "../../utils/helpers";
 import { Link, useLocation } from "react-router-dom";
 import { NoSomethingSmall } from "../../components/NoSomething";
 
+// Import uniform action buttons matching project structural components
+import { LoadMoreProduct, LoadMoreVariant } from "../../components/Button";
+
+const ITEM_INCREMENT = 2;
+
 export const RevenueStats5 = ({
   processOrderLifeCycleData,
   analyticsData,
@@ -46,10 +51,23 @@ export const RevenueStats5 = ({
 }) => {
   const [revenueStatsOpen, setRevenueStatsOpen] = useState(true);
   const { sumOrderQuantities, getAllAttributes } = useData();
+
   const attributes = getAllAttributes();
   const location = useLocation();
 
+  // Track previous analyticsData to detect filter changes
+  const prevAnalyticsDataRef = useRef(analyticsData);
+
   const toggleRevenueStats = () => setRevenueStatsOpen(!revenueStatsOpen);
+
+  // Reset pagination when filters change (analyticsData reference changes)
+  useEffect(() => {
+    if (prevAnalyticsDataRef.current !== analyticsData) {
+      setOrdersLimit(count);
+      setItemsLimits({});
+      prevAnalyticsDataRef.current = analyticsData;
+    }
+  }, [analyticsData, count, setOrdersLimit, setItemsLimits]);
 
   // Pre-process data for each card
   const totalSalesData = processOrderLifeCycleData(
@@ -67,6 +85,7 @@ export const RevenueStats5 = ({
     analyticsData,
   );
 
+  // Get the order data based on active tab
   const getOrderData = () => {
     switch (activeTab) {
       case "total-sales":
@@ -82,33 +101,58 @@ export const RevenueStats5 = ({
 
   const orderData = getOrderData();
 
-  // Paginate the orders
+  const tableHeaderBg = useMemo(() => {
+    switch (activeTab) {
+      case "total-sales":
+        return "#7BF1A8"; // green-800
+      case "pending-sales":
+        return "#FFD230"; // amber-800
+      case "cancellations":
+        return "#F8A5A5"; // red-800
+      default:
+        return "#7BF1A8";
+    }
+  }, [activeTab]);
+
+  // Paginate and sort the orders by the latest currentStatus.timestamp
   const displayedOrders = useMemo(() => {
-    return orderData.slice(0, ordersLimit);
+    // Clone the array using spread syntax to avoid mutating the original data
+    return [...orderData]
+      .sort((a, b) => {
+        const dateA = new Date(a.currentStatus?.timestamp || 0);
+        const dateB = new Date(b.currentStatus?.timestamp || 0);
+        return dateB - dateA; // Descending order: Latest/newest date first
+      })
+      .slice(0, ordersLimit);
   }, [orderData, ordersLimit]);
 
-  // Load more function for parent orders
-  const loadMore = () => {
-    const newLimit = Math.min(ordersLimit + count, orderData.length);
-    if (newLimit > ordersLimit) {
-      setOrdersLimit(newLimit);
-    }
+  // Core level pagination incremental calculation handler
+  const handleLoadMoreOrders = () => {
+    const totalOrdersCount = orderData.length;
+    const nextLimit = Math.min(ordersLimit + count, totalOrdersCount);
+    setOrdersLimit(nextLimit);
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
+  // Sub-level nested array pagination configurations
+  const handleLoadMoreItems = (orderId, totalItems) => {
+    const currentLimit = itemsLimits[orderId] || defaultItemsCount;
+    const nextLimit = Math.min(currentLimit + ITEM_INCREMENT, totalItems);
+    setItemsLimits((prev) => ({ ...prev, [orderId]: nextLimit }));
+  };
+
+  const handleResetItems = (orderId) => {
+    setItemsLimits((prev) => {
+      const updated = { ...prev };
+      delete updated[orderId];
+      return updated;
+    });
   };
 
   return (
     <div className="flex flex-col w-full">
       <div className="flex mt-2 w-full pl-2 pr-2 pb-2">
         <div
-          className={`${revenueStatsOpen ? "h-full" : "h-15"} w-full p-3 border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden`}
+          className={`${revenueStatsOpen ? "h-full" : "h-15"} bg-gray-50 w-full p-3 border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden`}
         >
           <div className="flex relative items-center justify-between">
             <div className="flex">
@@ -137,15 +181,14 @@ export const RevenueStats5 = ({
               <MediumAnalyticsStatCard
                 miniAnalyticsData={totalSalesData}
                 boxTitle={"Total Sales"}
-                boxStyle={`bg-green-300 border-green-500 ${
+                boxStyle={`bg-green-100 border-green-500 ${
                   activeTab === "total-sales"
-                    ? "ring-2 ring-blue-500 ring-offset-2"
+                    ? "ring-2 ring-green-500 ring-offset-2"
                     : ""
                 } transition-all duration-200`}
                 icon={DollarSign}
-                iconStyle={
-                  "bg-green-100 border-2 border-green-500 text-green-800"
-                }
+                iconStyle={"bg-green-600 text-white"}
+                amountStyle={"text-green-600"}
               />
             </div>
 
@@ -153,15 +196,14 @@ export const RevenueStats5 = ({
               <MediumAnalyticsStatCard
                 miniAnalyticsData={pendingSalesData}
                 boxTitle={"Pending Sales"}
-                boxStyle={`bg-amber-300 border-amber-400 ${
+                boxStyle={`bg-amber-100 border-amber-400 ${
                   activeTab === "pending-sales"
-                    ? "ring-2 ring-blue-500 ring-offset-2"
+                    ? "ring-2 ring-amber-500 ring-offset-2"
                     : ""
                 } transition-all duration-200`}
                 icon={TbCalendarDollar}
-                iconStyle={
-                  "bg-amber-100 border-2 border-amber-500 text-amber-800"
-                }
+                iconStyle={"bg-amber-600 text-white"}
+                amountStyle={"text-amber-600"}
               />
             </div>
 
@@ -169,359 +211,458 @@ export const RevenueStats5 = ({
               <MediumAnalyticsStatCard
                 miniAnalyticsData={cancellationsData}
                 boxTitle={"Cancellations"}
-                boxStyle={`bg-red-300 border-red-400 ${
+                boxStyle={`bg-red-100 border-red-400 ${
                   activeTab === "cancellations"
-                    ? "ring-2 ring-blue-500 ring-offset-2"
+                    ? "ring-2 ring-red-500 ring-offset-2"
                     : ""
                 } transition-all duration-200`}
                 icon={TbCurrencyDollarOff}
-                iconStyle={"bg-red-100 border-2 border-red-500 text-red-800"}
+                iconStyle={"bg-red-600 text-white"}
+                amountStyle={"text-red-600"}
               />
             </div>
           </div>
+          {/* Tab buttons ends */}
 
           {/* Table Section */}
-          <div className="flex w-full mt-6 border border-gray-200 rounded-md overflow-hidden">
+          <div className="flex w-full mt-6 overflow-hidden">
             <div className="flex flex-col w-full">
               {/* Table header */}
-              <div className="w-full top-0 z-30 bg-blue-100 border-b border-gray-300">
+              <div
+                className="w-full top-0 z-30 bg-blue-100 border rounded-t-md"
+                style={{
+                  borderColor: `${tableHeaderBg}80`,
+                }}
+              >
                 <div className="flex flex-col w-full overflow-hidden">
-                  <div className="flex w-full justify-between">
-                    <div className="grid grid-cols-[3fr_6fr_5fr] w-full text-sm">
-                      <div className="flex border-r border-gray-300 p-2 font-semibold">
+                  <div className="flex w-full justify-between bg-white">
+                    <div
+                      className={`grid grid-cols-[3fr_6fr_5fr] w-full text-sm`}
+                      style={{
+                        backgroundColor: `${tableHeaderBg}50`,
+                      }}
+                    >
+                      <div
+                        className={`flex border-r p-1`}
+                        style={{
+                          borderColor: `${tableHeaderBg}`,
+                        }}
+                      >
                         Order Detail
                       </div>
                       <div className="grid grid-cols-[6.6fr_1.6fr_.6fr_1.8fr] w-full text-sm">
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Ordered Items
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Listed Price
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Qty
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Sub Total
                         </div>
                       </div>
                       <div className="grid grid-cols-[.4fr_1fr_1fr_1.4fr_1.8fr_.5fr] w-full text-sm">
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Less
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Shipping
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}`,
+                          }}
+                        >
                           Overall Price
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}80`,
+                          }}
+                        >
                           Payment Status
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold">
+                        <div
+                          className={`flex border-r p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}80`,
+                          }}
+                        >
                           Order Status
                         </div>
-                        <div className="flex border-r border-gray-300 p-2 font-semibold"></div>
+                        <div
+                          className={`flex p-1`}
+                          style={{
+                            borderColor: `${tableHeaderBg}80`,
+                          }}
+                        ></div>
                       </div>
                     </div>
+                    <div
+                      className={`flex w-2 bg-blue-100`}
+                      style={{
+                        backgroundColor: `${tableHeaderBg}50`,
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
+              {/* Table header ends */}
 
               {/* Table Body */}
-              <div className="flex flex-col w-full">
-                {displayedOrders.length === 0 ? (
-                  <div className="flex items-center w-full">
-                    <LengthIsZeroError
-                      title="No data found"
-                      message="No orders found for this category"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col w-full">
-                    {displayedOrders.map((order, orderIndex) => {
-                      const totalQuantity = sumOrderQuantities(
-                        order.orderedItems,
-                      );
+              <div className="flex h-180 w-full overflow-y-auto border-l border-r border-b rounded-b-md border-gray-200 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                <div className="flex flex-col w-full">
+                  {displayedOrders.length === 0 ? (
+                    <div className="flex items-center w-full h-100">
+                      <LengthIsZeroError
+                        title="No data found"
+                        message="No orders found for this category"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col w-full">
+                      {displayedOrders.map((order, orderIndex) => {
+                        const totalQuantity = sumOrderQuantities(
+                          order.orderedItems,
+                        );
 
-                      const currentItemsLimit =
-                        itemsLimits[order._id || orderIndex] ||
-                        defaultItemsCount;
-                      const displayedItems =
-                        order.orderedItems?.slice(0, currentItemsLimit) || [];
+                        // Calculate sub-pagination bounds for items layout
+                        const itemsTotalCount = order.orderedItems?.length || 0;
+                        const orderItemsLimit =
+                          itemsLimits[order._id] || defaultItemsCount;
+                        const displayedOrderedItems = (
+                          order.orderedItems || []
+                        ).slice(0, orderItemsLimit);
 
-                      return (
-                        <div
-                          key={order._id || orderIndex}
-                          className="grid grid-cols-[3fr_6fr_5fr] w-full text-sm hover:bg-gray-50 transition-colors"
-                        >
-                          {/* Grid 1 - Order Detail */}
-                          <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                            <div className="flex flex-col items-start gap-2">
-                              <div className="flex items-start">
-                                <OrderIdBadge id={order._id} />
-                              </div>
-                              <div className="flex gap-2">
-                                <ImageDoubleExtraSmall
-                                  image={order.buyerInfo?.image}
-                                  alt={
-                                    order.buyerInfo?.buyerFirstName +
-                                      " " +
-                                      order.buyerInfo?.buyerLastName || "—"
-                                  }
-                                  type="circle"
-                                />
-                                <div className="flex flex-col items-start gap-1">
-                                  <h1 className="font-semibold text-lg leading-tight">
-                                    {order.buyerInfo?.buyerFirstName +
-                                      " " +
-                                      order.buyerInfo?.buyerLastName || "—"}
-                                  </h1>
-                                  <PersonIdBadge
-                                    id={order.buyerInfo?.buyerId}
+                        const isShowingAllItems =
+                          orderItemsLimit >= itemsTotalCount;
+                        const showNestedLoadMore =
+                          itemsTotalCount > defaultItemsCount;
+                        const remainingItems =
+                          itemsTotalCount - orderItemsLimit;
+                        const itemsButtonLabel = isShowingAllItems
+                          ? "Less"
+                          : `More +${remainingItems}`;
+
+                        return (
+                          <div
+                            key={order._id || orderIndex}
+                            className="grid grid-cols-[3fr_11fr] w-full text-sm hover:bg-gray-50 transition-colors border-b border-gray-300 last:border-b-0"
+                          >
+                            {/* Grid 1 - Order Detail (Left Column) */}
+                            <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                              <div className="flex flex-col items-start gap-2">
+                                <div className="flex items-start">
+                                  <OrderIdBadge id={order._id} />
+                                </div>
+                                <div className="flex gap-2">
+                                  <ImageDoubleExtraSmall
+                                    image={order.buyerInfo?.image}
+                                    alt={
+                                      order.buyerInfo?.buyerFirstName +
+                                        " " +
+                                        order.buyerInfo?.buyerLastName || "—"
+                                    }
+                                    type="circle"
                                   />
-                                  <IconedEmail data={order.buyerInfo?.email} />
-                                  <OrderPlacedUpdated
-                                    createdAt={order.createdAt}
-                                    updatedAt={order.updatedAt}
-                                  />
-                                  <div className="flex text-sm leading-tight gap-2 mt-1">
-                                    <div className="bg-gray-100 px-2 py-1 border border-gray-200 rounded-md">
-                                      <span className="text-gray-500">
-                                        Items:
-                                      </span>{" "}
-                                      <span className="font-semibold">
-                                        {order.orderedItems?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="bg-gray-100 px-2 py-1 border border-gray-200 rounded-md">
-                                      <span className="text-gray-500">
-                                        Quantity:
-                                      </span>{" "}
-                                      <span className="font-semibold">
-                                        {totalQuantity}
-                                      </span>
+                                  <div className="flex flex-col items-start gap-1">
+                                    <h1 className="font-semibold text-lg leading-tight">
+                                      {order.buyerInfo?.buyerFirstName +
+                                        " " +
+                                        order.buyerInfo?.buyerLastName || "—"}
+                                    </h1>
+                                    <PersonIdBadge
+                                      id={order.buyerInfo?.buyerId}
+                                    />
+                                    <IconedEmail
+                                      data={order.buyerInfo?.email}
+                                    />
+                                    <OrderPlacedUpdated
+                                      createdAt={order.createdAt}
+                                      updatedAt={order.updatedAt}
+                                    />
+                                    <div className="flex text-sm leading-tight gap-2 mt-1">
+                                      <div className="bg-gray-100 px-2 py-1 border border-gray-200 rounded-md">
+                                        <span className="text-gray-500">
+                                          Items:
+                                        </span>{" "}
+                                        <span className="font-semibold">
+                                          {itemsTotalCount}
+                                        </span>
+                                      </div>
+                                      <div className="bg-gray-100 px-2 py-1 border border-gray-200 rounded-md">
+                                        <span className="text-gray-500">
+                                          Quantity:
+                                        </span>{" "}
+                                        <span className="font-semibold">
+                                          {totalQuantity}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Grid 2 - Ordered Items */}
-                          <div
-                            className={`flex flex-col ${order.orderedItems?.length < 2 ? "border-b border-gray-300" : ""}`}
-                          >
-                            {order.orderedItems?.length === 0 ? (
-                              <div className="flex h-full items-center justify-center">
-                                <NoSomethingSmall text="No data found" />
-                              </div>
-                            ) : (
-                              <>
-                                {displayedItems.map(
-                                  (orderedItem, itemIndex) => {
-                                    const displayName = [
-                                      orderedItem.productName,
-                                      ...(
-                                        orderedItem.variant?.attributeOptions ||
-                                        []
-                                      ).map((option) => option.value),
-                                    ].join(" | ");
+                            {/* Right Combined Structural Column Container (11fr) */}
+                            <div className="flex flex-col w-full h-full">
+                              <div className="grid grid-cols-[6fr_5fr] w-full h-full">
+                                {/* Grid 2 - Ordered Items (Left Sub-column) */}
+                                <div className="flex flex-col h-full border-r border-gray-300">
+                                  {itemsTotalCount === 0 ? (
+                                    <div className="flex h-full items-center justify-center p-2">
+                                      <NoSomethingSmall text="No data found" />
+                                    </div>
+                                  ) : (
+                                    <div className="flex flex-col h-full">
+                                      <div className="grow flex flex-col">
+                                        {displayedOrderedItems.map(
+                                          (orderedItem, itemIndex) => {
+                                            const displayName = [
+                                              orderedItem.productName,
+                                              ...(
+                                                orderedItem.variant
+                                                  ?.attributeOptions || []
+                                              ).map((option) => option.value),
+                                            ].join(" | ");
 
-                                    return (
-                                      <div
-                                        key={itemIndex}
-                                        className="grid grid-cols-[6.6fr_1.6fr_.6fr_1.8fr] w-full h-full"
-                                      >
-                                        <div
-                                          className={`flex items-start p-2 ${order.orderedItems.length > 1 ? "border-b" : ""} border-r border-gray-300 h-full`}
-                                        >
-                                          <div className="flex-col">
-                                            <div className="flex gap-2">
-                                              <VariantBadge
-                                                id={orderedItem.variant?._id}
-                                              />
-                                              <ItemStatusBadge
-                                                statusId={
-                                                  orderedItem.variant?.status
-                                                }
-                                              />
-                                            </div>
-                                            <div className="flex gap-2 mt-2">
-                                              <ImageDoubleExtraSmall
-                                                image={
-                                                  orderedItem.variant
-                                                    ?.primaryImage
-                                                }
-                                                alt={orderedItem.productName}
-                                                type="square"
-                                              />
-                                              <div className="flex flex-col">
-                                                <h1 className="font-semibold text-md leading-tight">
-                                                  {displayName}
-                                                </h1>
-                                                <p className="leading-tight">
-                                                  SKU:{" "}
-                                                  {orderedItem.variant?.sku}
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                  <div className="flex gap-2 text-xs text-gray-600">
-                                                    {orderedItem.variant?.attributeOptions?.map(
-                                                      (option, idx) => (
-                                                        <OrderVariantAttributeBadege
-                                                          key={idx}
-                                                          option={option}
-                                                          index={idx}
-                                                          attributes={
-                                                            attributes
+                                            return (
+                                              <div
+                                                key={itemIndex}
+                                                className="grid grid-cols-[6.6fr_1.6fr_.6fr_1.8fr] w-full border-b border-gray-200 last:border-b-0 grow items-start"
+                                              >
+                                                {/* Ordered Items descriptor info */}
+                                                <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                                  <div className="flex-col">
+                                                    <div className="flex gap-2">
+                                                      <VariantBadge
+                                                        id={
+                                                          orderedItem.variant
+                                                            ?._id
+                                                        }
+                                                      />
+                                                      <ItemStatusBadge
+                                                        statusId={
+                                                          orderedItem.variant
+                                                            ?.status
+                                                        }
+                                                      />
+                                                    </div>
+                                                    <div className="flex gap-2 mt-2">
+                                                      <ImageDoubleExtraSmall
+                                                        image={
+                                                          orderedItem.variant
+                                                            ?.primaryImage
+                                                        }
+                                                        alt={
+                                                          orderedItem.productName
+                                                        }
+                                                        type="square"
+                                                      />
+                                                      <div className="flex flex-col">
+                                                        <h1 className="font-semibold text-md leading-tight">
+                                                          {displayName}
+                                                        </h1>
+                                                        <p className="leading-tight">
+                                                          SKU:{" "}
+                                                          {
+                                                            orderedItem.variant
+                                                              ?.sku
                                                           }
-                                                        />
-                                                      ),
-                                                    )}
+                                                        </p>
+                                                        <div className="flex gap-2 mt-2">
+                                                          <div className="flex gap-2 text-xs text-gray-600">
+                                                            {orderedItem.variant?.attributeOptions?.map(
+                                                              (option, idx) => (
+                                                                <OrderVariantAttributeBadege
+                                                                  key={idx}
+                                                                  option={
+                                                                    option
+                                                                  }
+                                                                  index={idx}
+                                                                  attributes={
+                                                                    attributes
+                                                                  }
+                                                                />
+                                                              ),
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
                                                   </div>
                                                 </div>
+
+                                                {/* Listed price box */}
+                                                <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                                  <AmountFormatSmall
+                                                    amount={
+                                                      orderedItem.variant?.price
+                                                    }
+                                                  />
+                                                </div>
+
+                                                {/* Quantity box */}
+                                                <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                                  <TextNormal
+                                                    text={
+                                                      orderedItem.variant
+                                                        ?.quantity
+                                                    }
+                                                  />
+                                                </div>
+
+                                                {/* Sub total box */}
+                                                <div className="flex items-start p-2 h-full">
+                                                  <AmountFormat
+                                                    amount={
+                                                      orderedItem.variant
+                                                        ?.subTotal
+                                                    }
+                                                  />
+                                                </div>
                                               </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div
-                                          className={`flex items-start p-2 ${order.orderedItems.length > 1 ? "border-b" : ""} border-r border-gray-300 h-full`}
-                                        >
-                                          <AmountFormatSmall
-                                            amount={orderedItem.variant?.price}
-                                          />
-                                        </div>
-                                        <div
-                                          className={`flex items-start p-2 ${order.orderedItems.length > 1 ? "border-b" : ""} border-r border-gray-300 h-full`}
-                                        >
-                                          <TextNormal
-                                            text={orderedItem.variant?.quantity}
-                                          />
-                                        </div>
-                                        <div
-                                          className={`flex items-start p-2 ${order.orderedItems.length > 1 ? "border-b" : ""} border-r border-gray-300 h-full`}
-                                        >
-                                          <AmountFormat
-                                            amount={
-                                              orderedItem.variant?.subTotal
-                                            }
-                                          />
-                                        </div>
+                                            );
+                                          },
+                                        )}
                                       </div>
-                                    );
-                                  },
-                                )}
-
-                                {order.orderedItems?.length >
-                                  currentItemsLimit && (
-                                  <div className="flex items-center justify-center p-2 border-b border-r border-gray-300 bg-gray-50 w-full">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setItemsLimits((prev) => ({
-                                          ...prev,
-                                          [order._id || orderIndex]:
-                                            currentItemsLimit +
-                                            defaultItemsCount,
-                                        }));
-                                      }}
-                                      className="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer focus:outline-none"
-                                    >
-                                      Load more items (+
-                                      {order.orderedItems.length -
-                                        currentItemsLimit}
-                                      )
-                                    </button>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-
-                          {/* Grid 3 - Summary and Actions */}
-                          <div className="grid grid-cols-[.4fr_1fr_1fr_1.4fr_1.8fr_.5fr] w-full">
-                            <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                              <TextNormal text={order.summary?.discount || 0} />
-                            </div>
-                            <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                              <AmountFormatSmall
-                                amount={order.summary?.shippingFee || 0}
-                              />
-                            </div>
-                            <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                              <AmountFormat
-                                amount={order.summary?.orderTotalPrice || 0}
-                              />
-                            </div>
-                            <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                              <PaymentStatusBadge status={order.paymentInfo} />
-                            </div>
-                            <div className="flex items-start p-2 border-b border-r border-gray-300 h-full">
-                              <div className="flex flex-col gap-1">
-                                <OrderStatusBadge
-                                  status={order.currentStatus?.slug}
-                                />
-                                <p className="text-[13px] leading-tight">
-                                  {dateFormatter(
-                                    order.currentStatus?.timestamp,
+                                    </div>
                                   )}
-                                </p>
+                                </div>
+
+                                {/* Grid 3 - Summary and Actions Status Metrics (Right Sub-column) */}
+                                <div className="grid grid-cols-[.4fr_1fr_1fr_1.4fr_1.8fr_.5fr] w-full h-full">
+                                  {/* Discount box */}
+                                  <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                    <TextNormal
+                                      text={order.summary?.discount || 0}
+                                    />
+                                  </div>
+                                  {/* Shipping fee box */}
+                                  <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                    <AmountFormatSmall
+                                      amount={order.summary?.shippingFee || 0}
+                                    />
+                                  </div>
+                                  {/* Overall price box */}
+                                  <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                    <AmountFormat
+                                      amount={
+                                        order.summary?.orderTotalPrice || 0
+                                      }
+                                    />
+                                  </div>
+                                  {/* Payment status box */}
+                                  <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                    <PaymentStatusBadge
+                                      status={order.paymentInfo}
+                                    />
+                                  </div>
+                                  {/* Order status box */}
+                                  <div className="flex items-start p-2 border-r border-gray-300 h-full">
+                                    <div className="flex flex-col gap-1">
+                                      <OrderStatusBadge
+                                        status={order.currentStatus?.slug}
+                                      />
+                                      <p className="text-[13px] leading-tight">
+                                        {dateFormatter(
+                                          order.currentStatus?.timestamp,
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  {/* View button */}
+                                  <div className="flex items-start p-2 h-full">
+                                    <div className="flex items-start">
+                                      <Link
+                                        to={`/orders/${order._id}`}
+                                        state={{
+                                          backUrl:
+                                            location.pathname +
+                                            location.search +
+                                            location.hash,
+                                        }}
+                                        className="cursor-pointer outline-0 text-gray-400 hover:text-gray-500 transition-all ease-in-out"
+                                      >
+                                        <FaEye height={16} width={16} />
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-start p-2 border-b border-gray-300 h-full">
-                              <div className="flex items-start">
-                                <Link
-                                  to={`/orders/${order._id}`}
-                                  state={{
-                                    backUrl:
-                                      location.pathname +
-                                      location.search +
-                                      location.hash,
-                                  }}
-                                  className="cursor-pointer outline-0 text-gray-400 hover:text-gray-500 transition-all ease-in-out"
-                                >
-                                  <FaEye height={16} width={16} />
-                                </Link>
-                              </div>
+
+                              {/* Dynamic Full Width Subgrid Items Action Bar spanning across all right sections */}
+                              {showNestedLoadMore && (
+                                <div className="w-full flex items-center justify-center p-2 border-t border-gray-300 bg-gray-50 mt-auto">
+                                  <LoadMoreVariant
+                                    onClick={() => {
+                                      if (isShowingAllItems) {
+                                        handleResetItems(order._id);
+                                      } else {
+                                        handleLoadMoreItems(
+                                          order._id,
+                                          itemsTotalCount,
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {itemsButtonLabel}
+                                  </LoadMoreVariant>
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {orderData.length > 0 && ordersLimit < orderData.length && (
-                  <div className="flex items-center justify-center p-4">
-                    <button
-                      onClick={loadMore}
-                      className="px-3 py-1 border border-gray-400 bg-gray-100 text-sm text-gray-500 rounded cursor-pointer hover:border-gray-600 hover:bg-gray-300 hover:text-gray-900 transition-transform duration-200 ease-out"
-                    >
-                      Load more
-                    </button>
-                  </div>
-                )}
-
-                {displayedOrders.length > 0 && (
-                  <div className="bg-gray-50 border-t border-gray-200 p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">
-                        Showing {displayedOrders.length} of {orderData.length}{" "}
-                        {orderData.length === 1 ? "order" : "orders"}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        Total Value:{" "}
-                        {formatCurrency(
-                          displayedOrders.reduce(
-                            (sum, order) =>
-                              sum + (order.summary?.orderTotalPrice || 0),
-                            0,
-                          ),
-                        )}
-                      </span>
+                        );
+                      })}
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* Core Navigation Load More Action Bar */}
+                  {orderData.length > 0 && ordersLimit < orderData.length && (
+                    <div className="flex items-center justify-center border-t border-gray-200 bg-white">
+                      <div className="flex p-2">
+                        <LoadMoreProduct onClick={handleLoadMoreOrders}>
+                          Load more
+                        </LoadMoreProduct>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

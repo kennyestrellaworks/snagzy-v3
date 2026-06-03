@@ -17,7 +17,7 @@ export const CarrierStats = ({ analyticsData }) => {
   return (
     <div className="flex flex-col w-full p-4">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Carriers</h2>
+        <h2 className="text-md font-bold text-gray-900">Carriers</h2>
         <p className="text-sm text-gray-500 mt-0.5">
           Orders fulfilled per carrier
         </p>
@@ -25,7 +25,7 @@ export const CarrierStats = ({ analyticsData }) => {
 
       <div className="flex items-start w-full h-full gap-6 ">
         <div className="flex w-full bg-white border border-gray-200 rounded-md p-4">
-          <div className="flex h-64 flex-col w-full gap-3">
+          <div className="flex h-70 flex-col w-full gap-3">
             {carrierDist.map((c, i) => {
               const pct = Math.round((c.value / analyticsData.length) * 100);
               return (
