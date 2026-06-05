@@ -133,8 +133,8 @@ export const MediumAnalyticsStatCard = ({
 
           {ordersToProcess.length < 1 ? (
             <div className="flex flex-col mt-1">
-              <p className="text-[11px] leading-tight text-gray-500">No data</p>
-              <p className="text-[11px] leading-tight text-gray-500">No data</p>
+              <p className="text-[14px] leading-tight text-gray-500">No data</p>
+              <p className="text-[14px] leading-tight text-gray-500">No data</p>
             </div>
           ) : (
             <div className="flex flex-col mt-1">
