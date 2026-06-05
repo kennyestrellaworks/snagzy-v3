@@ -33,6 +33,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Dashboard1 } from "./pages/Dashboard1";
 import { Dashboard2 } from "./pages/Dashboard2";
 import { Dashboard3 } from "./pages/Dashboard3";
+import UserDashboard from "./pages/UserDashboard";
 
 export const App = () => {
   const router = createBrowserRouter(
@@ -54,6 +55,7 @@ export const App = () => {
         <Route path="dashboard1" element={<Dashboard1 />} />
         <Route path="dashboard2" element={<Dashboard2 />} />
         <Route path="dashboard3" element={<Dashboard3 />} />
+        <Route path="userdashboard" element={<UserDashboard />} />
 
         <Route path="users" element={<Users />} />
 

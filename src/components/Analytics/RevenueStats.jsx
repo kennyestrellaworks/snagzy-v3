@@ -61,23 +61,38 @@ const RevenueOverTimeChart = ({
     const processOrders = (orders, key) => {
       if (!orders || !Array.isArray(orders)) return;
       orders.forEach((order) => {
-        const dateStr = order.currentStatus?.timestamp || order.createdAt;
+        const dateStr = order.currentStatus?.timestamp;
         if (!dateStr) return;
 
         const dateObj = new Date(dateStr);
         if (isNaN(dateObj.getTime())) return;
 
-        const keyDate = dateObj.toISOString().split("T")[0];
-        const label = dateObj.toLocaleDateString("en-US", {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const keyDate = `${year}-${month}-${day}`;
+
+        // Tooltip long-form text (e.g., "Nov 4, 2024")
+        const fullDateLabel = dateObj.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        // X-Axis text (e.g., "Nov 4")
+        const xAxisLabel = dateObj.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         });
+
         const amount = Number(order.summary?.orderTotalPrice) || 0;
 
         if (!dataMap[keyDate]) {
           dataMap[keyDate] = {
             date: keyDate,
-            label: label,
+            label: xAxisLabel,
+            fullDate: fullDateLabel,
+            year: year,
             "Total Sales": 0,
             "Pending Sales": 0,
             Cancellations: 0,
@@ -107,6 +122,8 @@ const RevenueOverTimeChart = ({
 
   if (chartData.length === 0) return null;
 
+  // console.log("chartData", chartData);
+
   return (
     <div className="w-full mt-4 p-3 bg-white border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden">
       <div className="mb-4">
@@ -121,19 +138,22 @@ const RevenueOverTimeChart = ({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
-            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+            margin={{ top: 10, right: 10, left: -10, bottom: 15 }}
           >
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
               stroke="#F3F4F6"
             />
+            {/* XAxis with dynamic interval checking to stop dense overlaps */}
             <XAxis
               dataKey="label"
               tickLine={false}
               axisLine={false}
               stroke="#9CA3AF"
               fontSize={11}
+              interval="preserveStartEnd"
+              minTickGap={45}
             />
             <YAxis
               tickLine={false}
@@ -142,8 +162,14 @@ const RevenueOverTimeChart = ({
               fontSize={11}
               tickFormatter={formatCurrency}
             />
+            {/* Tooltip mapping directly to the formatted fullDate label */}
             <Tooltip
-              formatter={(value) => [formatCurrency(value), undefined]}
+              labelKey="fullDate"
+              labelFormatter={(label, items) => {
+                // Extracts fullDate (e.g. "Nov 4, 2024") from the hovered item dataset
+                return items?.[0]?.payload?.fullDate || label;
+              }}
+              formatter={(value, name) => [formatCurrency(value), name]}
               contentStyle={{
                 backgroundColor: "#fff",
                 border: "1px solid #E5E7EB",
@@ -187,6 +213,8 @@ export const RevenueStats = ({
 
   // Track previous analyticsData to detect filter changes
   const prevAnalyticsDataRef = useRef(analyticsData);
+
+  // console.log("analyticsData", analyticsData);
 
   const toggleRevenueStats = () => setRevenueStatsOpen(!revenueStatsOpen);
 
