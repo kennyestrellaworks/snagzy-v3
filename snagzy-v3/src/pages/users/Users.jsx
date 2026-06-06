@@ -121,7 +121,7 @@ export const Users = () => {
               const reviewsByThisPerson = getAllReviewsOfPersonId(user._id);
 
               // Primary address of this person
-              const primaryAddress = user.address.find(
+              const primaryAddress = user.address?.find(
                 (address) => address.isDefault === true,
               );
               // console.log("primaryAddress", primaryAddress);
@@ -131,7 +131,7 @@ export const Users = () => {
                 <div key={index} className="flex flex-col w-full">
                   <div
                     key={index}
-                    className={`grid grid-cols-[2.6fr_2.4fr_1fr_1fr_1fr_.5fr_1fr_.5fr_.6fr_.5fr] border-b border-gray-300 bg-white ${profileStatus.slug === "inactive" ? "opacity-50" : profileStatus.slug === "active" ? "" : ""} hover:bg-blue-50/30 transition-all duration-300 ease-in-out`}
+                    className={`grid grid-cols-[2.6fr_2.4fr_1fr_1fr_1fr_.5fr_1fr_.5fr_.6fr_.5fr] border-b border-gray-300 bg-white ${profileStatus?.slug === "inactive" ? "opacity-50" : profileStatus?.slug === "active" ? "" : ""} hover:bg-blue-50/30 transition-all duration-300 ease-in-out`}
                   >
                     {/* User detail box  */}
                     <div className="flex p-2 border-r border-gray-300 h-full">
@@ -142,8 +142,8 @@ export const Users = () => {
                     {/* User info box  */}
                     <div className="flex p-2 border-r border-gray-300 h-full">
                       <div className="flex items-start flex-col text-[14px]">
-                        <IconedEmail data={user.contact.email} />
-                        <IconedPhone data={user.contact.phone} />
+                        <IconedEmail data={user.contact?.email} />
+                        <IconedPhone data={user.contact?.phone} />
                         <IconedAddress data={primaryAddress} />
                       </div>
                     </div>
@@ -263,7 +263,7 @@ export const Users = () => {
                     <div className="flex p-2">
                       <div className="flex items-start">
                         <Link
-                          to={`/users/${user.slug}/${user._id}`}
+                          to={`/users/${user?.slug}/${user._id}`}
                           state={{
                             backUrl:
                               location.pathname +

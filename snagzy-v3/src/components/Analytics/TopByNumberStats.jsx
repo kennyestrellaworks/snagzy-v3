@@ -70,7 +70,7 @@ export const TopByNumberStats = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 mt-4 gap-2">
+        <div className="grid grid-cols-[1fr_1fr_1fr] mt-4 gap-2">
           {/* Grid 1 */}
           <div className="w-full p-3 bg-white border border-gray-200 rounded-md transition-all duration-300 ease-in-out overflow-hidden">
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">

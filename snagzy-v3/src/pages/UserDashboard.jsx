@@ -41,6 +41,8 @@ export default function UserDashboard() {
 
     // 3. Deactivated accounts status (True explicit flag checks)
     const deactivatedUsers = users.filter((u) => u.deactivated === true).length;
+    // console.log("deactivatedUsers", deactivatedUsers);
+    // console.log("users", users);
 
     // 4. Resolve Dynamic Profile Statuses by translating IDs to names
     const profileStatusDistribution = {};
@@ -275,32 +277,84 @@ export default function UserDashboard() {
             </p>
           </div>
           <div className="w-full h-64 relative">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
-                  data={stats.profileStatusData}
+                  data={[
+                    {
+                      name: "Online Users",
+                      value: stats.activeUsers,
+                      color: "#06b6d4",
+                    },
+                    {
+                      name: "Offline Users",
+                      value: stats.totalUsers - stats.activeUsers,
+                      color: "#6366f1",
+                    },
+                    {
+                      name: "Store Owners",
+                      value: stats.usersWithStores,
+                      color: "#10b981",
+                    },
+                    {
+                      name: "Deactivated Users",
+                      value: stats.deactivatedUsers,
+                      color: "#f43f5e",
+                    },
+                  ]}
                   cx="50%"
-                  cy="50%"
+                  cy="50%" // Recentered to perfectly middle since bottom legends are gone
                   innerRadius={60}
                   outerRadius={85}
                   paddingAngle={4}
                   dataKey="value"
+                  // Custom calculation function drawing the lines & data text strings safely
+                  label={({
+                    cx,
+                    cy,
+                    midAngle,
+                    innerRadius,
+                    outerRadius,
+                    value,
+                    name,
+                  }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = outerRadius + 16; // Length distance of line points outside the donut boundary
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    const textAnchor = x > cx ? "start" : "end";
+
+                    // Filter out sections evaluating to zero so empty categories don't bundle lines on top of each other
+                    if (value === 0) return null;
+
+                    return (
+                      <text
+                        x={x}
+                        y={y}
+                        textAnchor={textAnchor}
+                        dominantBaseline="central"
+                        className="fill-slate-700 font-sans font-bold text-[11px]"
+                      >
+                        {`${name}: ${value}`}
+                      </text>
+                    );
+                  }}
+                  // Active line connector configurations pointing to labels
+                  labelLine={{
+                    stroke: "#cbd5e1",
+                    strokeWidth: 1.2,
+                    strokeDasharray: "2 2",
+                  }}
                 >
-                  {stats.profileStatusData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                  {[
+                    { color: "#06b6d4" },
+                    { color: "#6366f1" },
+                    { color: "#10b981" },
+                    { color: "#f43f5e" },
+                  ].map((cell, index) => (
+                    <Cell key={`cell-${index}`} fill={cell.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend
-                  verticalAlign="bottom"
-                  align="center"
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: "11px", bottom: -10 }}
-                />
               </PieChart>
             </ResponsiveContainer>
           </div>
