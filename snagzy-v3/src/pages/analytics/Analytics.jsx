@@ -10,6 +10,7 @@ import { PaymentMethodStats } from "../../components/Analytics/PaymentMethodStat
 import { ShippingMethodStats } from "../../components/Analytics/ShippingMethodStats";
 import { OrderLifeCycleDistribution } from "../../components/Analytics/OrderLifeCycleDistribution";
 import { CarrierStats } from "../../components/Analytics/CarrierStats";
+import { UserStats } from "../../components/Analytics/UserStats";
 
 export const Analytics = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -518,7 +519,11 @@ export const Analytics = () => {
           </div>
         </div>
 
-        <div className="flex mt-2 w-full pl-2 pr-2 pb-2"></div>
+        <div className="flex mt-2 w-full pl-2 pr-2 pb-2">
+          <div className="flex w-full bg-gray-50 border border-gray-200 rounded-md">
+            <UserStats />
+          </div>
+        </div>
       </div>
     </div>
   );
