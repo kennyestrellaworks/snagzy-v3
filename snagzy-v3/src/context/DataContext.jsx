@@ -22,6 +22,7 @@ import {
 import { navLinks } from "../data/navLinks.js";
 import { itemStatus } from "../data/itemStatus.js";
 import { chatTabs } from "../data/chatTabs.js";
+import { shippingMethod } from "../data/shippingMethod.js";
 
 const DataContext = createContext();
 
@@ -624,6 +625,11 @@ export const DataProvider = ({ children }) => {
     return itemStatus;
   };
 
+  // Shipping methods /////////////////////////////////
+  const getAllShippingMethods = () => {
+    return shippingMethod;
+  };
+
   // Users //////////////////////////
   // Get all users.
   const getAllUsers = () => {
@@ -805,6 +811,7 @@ export const DataProvider = ({ children }) => {
         getOrdersLayoutNavLinks,
         getRevenueLayoutNavLinks,
         getAllItemStatus,
+        getAllShippingMethods,
         getAllUsers,
         getUserById,
         getUserHomeAddress,

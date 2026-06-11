@@ -1,6 +1,6 @@
 // Image components using only Tailwind classes for sizing
 const getRounded = (type) =>
-  type === "square" ? "rounded" : type === "circle" ? "rounded-full" : "";
+  type === "square" ? "rounded-md" : type === "circle" ? "rounded-full" : "";
 
 export const ImageDoubleExtraSmall = ({ image, alt, type }) => (
   <div className="flex mb-2 w-10 h-10 shrink-0">
@@ -43,11 +43,11 @@ export const ImageMedium = ({ image, alt, type }) => (
 );
 
 export const ImageLarge = ({ image, alt, type }) => (
-  <div className="flex mb-2 w-30 h-30 shrink-0">
+  <div className="flex mb-2 w-18 h-18 shrink-0">
     <img
       src={image}
       alt={alt}
-      className={`w-full h-full object-cover ${getRounded(type)}`}
+      className={`w-full h-full object-cover ${getRounded(type)} border border-gray-300`}
     />
   </div>
 );

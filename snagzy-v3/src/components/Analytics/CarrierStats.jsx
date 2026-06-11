@@ -1,10 +1,15 @@
 import React from "react";
 import { useTopAnalytics } from "../../context/TopAnalyticsContext";
+import { useData } from "../../context/DataContext";
 
 export const CarrierStats = ({ analyticsData }) => {
+  const { getAllShippingMethods } = useData();
   const { topAnalyticsValue } = useTopAnalytics();
 
   const carrierDist = topAnalyticsValue.getCarrierDist(analyticsData);
+  const shippingMethods = getAllShippingMethods();
+
+  // console.log("shippingMethods", shippingMethods);
 
   const PAYMENT_COLORS = [
     "#3b82f6",

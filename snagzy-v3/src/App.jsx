@@ -33,7 +33,14 @@ import { Dashboard } from "./pages/Dashboard";
 import { Dashboard1 } from "./pages/Dashboard1";
 import { Dashboard2 } from "./pages/Dashboard2";
 import { Dashboard3 } from "./pages/Dashboard3";
-import UserDashboard from "./pages/UserDashboard";
+import { ReviewsDashboard } from "./pages/ReviewsDashboard";
+import { Stores } from "./pages/stores/Stores";
+import { ProductsAnalytics } from "./pages/ProductsAnalytics";
+import { ReviewsDashboard1 } from "./pages/ReviewsDashboard1";
+import { UserDashboard } from "./pages/UserDashboard";
+import { UserDashboard1 } from "./pages/UserDashboard1";
+import { StoresAnalytics } from "./pages/StoresAnalytics";
+import { InventoriesAnalytics } from "./pages/InventoriesAnalytics";
 
 export const App = () => {
   const router = createBrowserRouter(
@@ -56,8 +63,15 @@ export const App = () => {
         <Route path="dashboard2" element={<Dashboard2 />} />
         <Route path="dashboard3" element={<Dashboard3 />} />
         <Route path="userdashboard" element={<UserDashboard />} />
+        <Route path="userdashboard1" element={<UserDashboard1 />} />
+        <Route path="reviewsdashboard" element={<ReviewsDashboard />} />
+        <Route path="reviewsdashboard1" element={<ReviewsDashboard1 />} />
+        <Route path="productsanalytics" element={<ProductsAnalytics />} />
+        <Route path="storesanalytics" element={<StoresAnalytics />} />
+        <Route path="inventoriesanalytics" element={<InventoriesAnalytics />} />
 
         <Route path="users" element={<Users />} />
+        <Route path="stores" element={<Stores />} />
 
         <Route path="users/:slug/:userId" element={<UserLayout />}>
           <Route index element={<UserProfile />} />

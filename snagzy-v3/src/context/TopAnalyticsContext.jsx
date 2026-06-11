@@ -136,15 +136,34 @@ export const TopAnalyticsProvider = ({ children }) => {
       return Object.values(map).sort((a, b) => b.value - a.value);
     };
 
-    // Method to get shippingInfo.method
-    const getShippingMethodDist = (orders) => {
+    // Method to get shippingInfo.method matched with shippingMethods array
+    const getShippingMethodDist = (orders, shippingMethods) => {
       const map = {};
+
+      // Ensure we have a valid array to query against
+      const methodsRef = Array.isArray(shippingMethods) ? shippingMethods : [];
+
       orders.forEach((o) => {
-        const m = o.buyerInfo.shippingInfo.method;
-        const label = m.charAt(0).toUpperCase() + m.slice(1);
-        if (!map[m]) map[m] = { name: label, value: 0 };
-        map[m].value += 1;
+        // Optional chaining to prevent runtime crashes if structural data is missing
+        const methodId = o.buyerInfo?.shippingInfo?.method;
+        if (!methodId) return;
+
+        // Look up the matching shipping method record by its ID
+        const matchedMethod = methodsRef.find((m) => m._id === methodId);
+
+        // Grab the friendly display name if found; otherwise, fall back gracefully
+        const label = matchedMethod ? matchedMethod.name : "Unknown Method";
+
+        // Group identical items using the unique slug or ID
+        const groupKey = matchedMethod ? matchedMethod.slug : methodId;
+
+        if (!map[groupKey]) {
+          map[groupKey] = { name: label, value: 0 };
+        }
+        map[groupKey].value += 1;
       });
+
+      // Convert the hash map into a clean list and sort descending by order volume
       return Object.values(map).sort((a, b) => b.value - a.value);
     };
 
