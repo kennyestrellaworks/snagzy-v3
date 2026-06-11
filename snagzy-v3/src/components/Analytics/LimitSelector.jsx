@@ -7,7 +7,7 @@ export const LimitSelector = ({ id, value, onChangeValue }) => {
         id={id}
         value={value}
         onChange={(e) => onChangeValue(Number(e.target.value))}
-        className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-1 pl-2 pr-7 text-xs font-medium rounded-lg cursor-pointer hover:bg-slate-100 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+        className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-1 pl-2 pr-7 text-xs font-medium rounded-md cursor-pointer hover:bg-slate-100 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
       >
         <option value={3}>Top 3</option>
         <option value={5}>Top 5</option>

@@ -10,12 +10,18 @@ import {
   YAxis,
 } from "recharts";
 import { CustomTooltipV1 } from "./CustomTooltip";
+import { useData } from "../../context/DataContext";
 
 export const ShippingMethodStats = ({ analyticsData }) => {
+  const { getAllShippingMethods } = useData();
   const { topAnalyticsValue } = useTopAnalytics();
 
-  const shippingMethodDist =
-    topAnalyticsValue.getShippingMethodDist(analyticsData);
+  const shippingMethods = getAllShippingMethods();
+
+  const shippingMethodDist = topAnalyticsValue.getShippingMethodDist(
+    analyticsData,
+    shippingMethods,
+  );
 
   const SHIPPING_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
 

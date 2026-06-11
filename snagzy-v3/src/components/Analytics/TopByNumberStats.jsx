@@ -76,7 +76,7 @@ export const TopByNumberStats = ({
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
                 <h2 className="text-md font-bold text-slate-800">
-                  Top Selling Products
+                  Top Products in Sales
                 </h2>
                 <p className="text-sm text-slate-500">
                   Displaying the top items by unit volume from successful sales
@@ -146,7 +146,7 @@ export const TopByNumberStats = ({
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
                 <h2 className="text-md font-bold text-slate-800">
-                  Top Customers
+                  Top Customers in Spending
                 </h2>
                 <p className="text-sm text-slate-500">
                   Displaying the highest spending buyers from completed
@@ -217,7 +217,7 @@ export const TopByNumberStats = ({
             <div className="flex justify-between gap-10 mb-4 border-b border-slate-100 pb-3">
               <div className="flex flex-col">
                 <h2 className="text-md font-bold text-slate-800">
-                  Top Performing Stores
+                  Top Stores in Sales
                 </h2>
                 <p className="text-sm text-slate-500">
                   Displaying the stores ranked by total generated sales revenue
