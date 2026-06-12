@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #232e46;
+
+  --primary: #e5e7eb;
+  --primary-light: #d8d9dd;
+  --primary-dark: #9ca3af;
+
+  --secondary: #7a808a;
+  --secondary-light: #6f747d;
+  --secondary-dark: #656a72;
+
+  --tester: var(--tertiary-dark);
+  --tester2: var(--tertiary);
+  --tester3: red;
+
+  --tertiary: #1d4ed8;
+  --tertiary-light: #3b82f6;
+  --tertiary-dark: #1e40af;
+
+  --theme-navbar-bg: var(--background);
+  --theme-navbar-border-b: var(--primary);
+
+  --theme-navbar-nav: var(--tester);
+  --theme-navbar-nav-link: var(--tester);
+  --theme-navbar-nav-dropdown: var(--tester);
+  --theme-navbar-nav-dropdown-item-hover: var(--tester2);
+
+  --theme-navbar-search: var(--tester);
+  --theme-navbar-search-icon: var(--tester3);
+}
+
+.dark-mode {
+  --background: #1a1a1a;
+  --foreground: #f3f4f6;
+
+  --primary: #4b5563;
+  --primary-light: #6b7280;
+  --primary-dark: #374151;
+
+  --secondary: #2c3441;
+  --secondary-light: #1f2630;
+  --secondary-dark: #0d1320;
+
+  --secondary: #cc6600;
+  --secondary-light: #e67300;
+  --secondary-dark: #b34205;
+
+  --tester: var(--tertiary-dark);
+
+  --btn-bg: var(--secondary-light);
+  --btn-bg-hover: var(--secondary-dark);
+  --btn-border: var(--primary-light);
+  --btn-text: var(--foreground);
+  --btn-ring: var(--tertiary);
+  --list: var(--primary);
+  --list-bg-hover: var(--primary-dark);
+  --list-text: var(--foreground);
+  --btn-icon-bg-hover: var(--btn-bg-hover);
+
+  --search-input-bg: var(--secondary);
+  --search-input-icon: var(--primary-light);
+  --search-input-text: var(--primary-light);
+  --search-input-border: var(--primary-dark);
+  --search-input-ring: var(--tertiary);
+  --search-input-placeholder: var(--primary-light);
+
+  --btn-icon-bg: var(--primary-light);
+}
+
+/* Navbar  */
+.theme-navbar {
+  background-color: var(--theme-navbar-bg);
+  border-bottom: 1px solid var(--theme-navbar-border-b);
+}
+.theme-navbar-link {
+  background-color: var(--theme-navbar-nav-link);
+  color: var(--tester3);
+}
+.theme-navbar-nav-dropdown {
+  background-color: var(--tester);
+}
+.theme-navbar-nav-dropdown-item:hover {
+  background-color: var(--tester2);
+  color: var(--tester3);
+}
+/* Navbar search input  */
+.theme-navbar-search {
+  background-color: tan;
+  border: 1px solid red;
+  color: white;
+}
+.theme-navbar-search-icon {
+  color: yellow;
+}
+.theme-navbar-search::placeholder {
+  color: green;
+}
+
+/* .theme-bg {
+  background-color: rgba(var(--background));
+}
+.theme-text {
+  color: rgba(var(--foreground));
+}
+.theme-text-dark {
+  color: rgba(var(--secondary-dark));
+}
+.theme-border {
+  border: 1px solid rgba(var(--secondary));
+}
+.theme-border-b {
+  border-bottom: 1px solid rgba(var(--secondary));
+}
+
+/* Button/link with dropdown  */
+/* .theme-btn {
+  background-color: rgba(var(--btn-bg));
+  border: 1px solid rgba(var(--btn-border));
+  color: rgba(var(--btn-text));
+}
+.theme-btn-hover {
+  background-color: rgba(var(--btn-bg-hover));
+}
+.theme-btn-ring {
+  color: rgba(var(--btn-ring));
+}
+.theme-list {
+  background-color: rgba(var(--list));
+}
+.theme-list-text {
+  color: rgba(var(--list-text));
+}
+.theme-list-item {
+  color: rgba(var(--list-text));
+  background-color: rgba(var(--list-bg));
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.theme-list-item:hover {
+  background-color: rgba(var(--list-bg-hover));
+}
+.theme-btn-icon-bg-is-open {
+  background-color: rgba(var(--btn-icon-bg-hover));
+  color: rgba(var(--btn-icon-hover));
+}
+.theme-btn-icon-bg:hover {
+  background-color: rgba(var(--btn-icon-bg-hover));
+  color: rgba(var(--tester));
+}
+.theme-btn-icon {
+  color: rgba(var(--btn-icon));
+}
+.theme-btn-icon:hover {
+  color: rgba(var(--btn-icon-hover));
+} */
+
+/* Searcn input  */
+/* .theme-search-input {
+  background-color: rgba(var(--search-input-bg), 0.5);
+  border: 1px solid rgba(var(--search-input-border));
+  color: rgba(var(--search-input-text));
+}
+.theme-search-input::placeholder {
+  color: rgba(var(--search-input-placeholder));
+}
+.theme-search-input-icon {
+  fill: rgba(var(--search-input-icon));
+}
+
+/* Navbar buttons/links  */
+/* .theme-btn-icon-bg:hover {
+  background-color: rgba(var(--btn-icon-bg));
+}  */

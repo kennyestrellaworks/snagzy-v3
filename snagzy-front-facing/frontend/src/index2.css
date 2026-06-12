@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 255, 255, 255;
+  --foreground: 35, 46, 70;
+
+  --primary: 229, 231, 235;
+  --primary-light: 216, 217, 221;
+  --primary-dark: 156, 163, 175;
+
+  --secondary: 122, 128, 138;
+  --secondary-light: 111, 116, 125;
+  --secondary-dark: 101, 106, 114;
+
+  --tester: var(--tertiary-dark);
+
+  --tertiary: 29, 78, 216;
+  --tertiary-light: 59, 130, 246;
+  --tertiary-dark: 30, 64, 175;
+
+  --btn-bg: var(--primary);
+  --btn-bg-hover: var(--primary-light);
+  --btn-border: var(--primary-dark);
+  --btn-text: var(--secondary-dark);
+  --btn-ring: var(--tertiary);
+  --list: var(--background);
+  --list-bg-hover: var(--primary);
+  --list-text: var(--secondary-dark);
+  --btn-icon-bg-hover: var(--btn-bg-hover);
+
+  --search-input-bg: var(--primary);
+  --search-input-icon: var(--primary-dark);
+  --search-input-text: var(--secondary-dark);
+  --search-input-border: var(--primary-light);
+  --search-input-ring: var(--tertiary);
+  --search-input-placeholder: var(--primary-dark);
+
+  --btn-icon-bg: var(--primary);
+}
+
+.dark-mode {
+  --background: 26, 26, 26;
+  --foreground: 243, 244, 246;
+
+  --primary: 75, 85, 99;
+  --primary-light: 107, 114, 128;
+  --primary-dark: 55, 65, 81;
+
+  --secondary: 44, 52, 65;
+  --secondary-light: 31, 38, 48;
+  --secondary-dark: 13, 19, 32;
+
+  --tertiary: 29, 78, 216;
+  --tertiary-light: 59, 130, 246;
+  --tertiary-dark: 30, 64, 175;
+
+  --tester: var(--tertiary-dark);
+
+  --btn-bg: var(--secondary-light);
+  --btn-bg-hover: var(--secondary-dark);
+  --btn-border: var(--primary-light);
+  --btn-text: var(--foreground);
+  --btn-ring: var(--tertiary);
+  --list: var(--primary);
+  --list-bg-hover: var(--primary-dark);
+  --list-text: var(--foreground);
+  --btn-icon-bg-hover: var(--btn-bg-hover);
+
+  --search-input-bg: var(--secondary);
+  --search-input-icon: var(--primary-light);
+  --search-input-text: var(--primary-light);
+  --search-input-border: var(--primary-dark);
+  --search-input-ring: var(--tertiary);
+  --search-input-placeholder: var(--primary-light);
+
+  --btn-icon-bg: var(--primary-light);
+}
+
+.theme-bg {
+  background-color: rgba(var(--background));
+}
+.theme-text {
+  color: rgba(var(--foreground));
+}
+.theme-text-dark {
+  color: rgba(var(--secondary-dark));
+}
+.theme-border {
+  border: 1px solid rgba(var(--secondary));
+}
+.theme-border-b {
+  border-bottom: 1px solid rgba(var(--secondary));
+}
+
+/* Button/link with dropdown  */
+.theme-btn {
+  background-color: rgba(var(--btn-bg));
+  border: 1px solid rgba(var(--btn-border));
+  color: rgba(var(--btn-text));
+}
+.theme-btn-hover {
+  background-color: rgba(var(--btn-bg-hover));
+}
+.theme-btn-ring {
+  color: rgba(var(--btn-ring));
+}
+.theme-list {
+  background-color: rgba(var(--list));
+}
+.theme-list-text {
+  color: rgba(var(--list-text));
+}
+.theme-list-item {
+  color: rgba(var(--list-text));
+  background-color: rgba(var(--list-bg));
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.theme-list-item:hover {
+  background-color: rgba(var(--list-bg-hover));
+}
+.theme-btn-icon-bg-is-open {
+  background-color: rgba(var(--btn-icon-bg-hover));
+  color: rgba(var(--btn-icon-hover));
+}
+.theme-btn-icon-bg:hover {
+  background-color: rgba(var(--btn-icon-bg-hover));
+  color: rgba(var(--tester));
+}
+.theme-btn-icon {
+  color: rgba(var(--btn-icon));
+}
+.theme-btn-icon:hover {
+  color: rgba(var(--btn-icon-hover));
+}
+
+/* Searcn input  */
+.theme-search-input {
+  background-color: rgba(var(--search-input-bg), 0.5);
+  border: 1px solid rgba(var(--search-input-border));
+  color: rgba(var(--search-input-text));
+}
+.theme-search-input::placeholder {
+  color: rgba(var(--search-input-placeholder));
+}
+.theme-search-input-icon {
+  fill: rgba(var(--search-input-icon));
+}
+
+/* Navbar buttons/links  */
+.theme-btn-icon-bg:hover {
+  background-color: rgba(var(--btn-icon-bg));
+}
