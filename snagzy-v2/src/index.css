@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+.filter-list {
+  color: #848484;
+}
+.count-badge-item {
+  background-color: #f6f6f6;
+  border: 1px solid #d9d9d9;
+  color: #868686;
+}
+
+/* Payment status filter  */
+.payment-status-filter .button {
+  border: 1px solid #c4dcfe;
+  background-color: #f2f8ff;
+}
+
+.payment-status-filter .filter-title-active {
+  border: 1px solid #c0dbfc;
+  background-color: #e1edfe;
+  color: #155dfc;
+}
+
+.payment-status-filter .arrow-icon {
+  color: #155dfc;
+}
+
+.payment-status-filter .filter-options {
+  border: 1px solid #c4dcfe;
+}
+
+.payment-status-filter .filter-list:hover {
+  background-color: #eff6ff;
+  border: 1px solid #cfe4fe;
+  color: #155dfc;
+}
+
+.payment-status-filter .filter-list:hover .count-badge-item {
+  background-color: #d8e9ff;
+  border: 1px solid #aecaee;
+  color: #155dfc;
+}
+.payment-status-filter .count-badge {
+  background-color: #d8e9ff;
+  border: 1px solid #aecaee;
+  color: #155dfc;
+}
+
+/* Order status success filter  */
+.order-status-success-filter .button {
+  border: 1px solid #c3e9cf;
+  background-color: #f2fff6;
+}
+
+.order-status-success-filter .filter-title-active {
+  border: 1px solid #b6e6c5;
+  background-color: #e1fce9;
+  color: #4db26a;
+}
+
+.order-status-success-filter .arrow-icon {
+  color: #4db26a;
+}
+
+.order-status-success-filter .filter-options {
+  border: 1px solid #c3e9cf;
+}
+
+.order-status-success-filter .filter-list:hover {
+  background-color: #e7fbed;
+  border: 1px solid #c4ebd0;
+  color: #4db26a;
+}
+
+.order-status-success-filter .filter-list:hover .count-badge-item {
+  background-color: #c5eed1;
+  border: 1px solid #90dba7;
+  color: #41a55e;
+}
+.order-status-success-filter .count-badge {
+  background-color: #c5eed1;
+  border: 1px solid #90dba7;
+  color: #41a55e;
+}
+
+/* Order status success failure  */
+.order-status-failure-filter .button {
+  border: 1px solid #efc1c1;
+  background-color: #fcf8f8;
+}
+
+.order-status-failure-filter .filter-title-active {
+  border: 1px solid #eecfcf;
+  background-color: #f8ecec;
+  color: #e38e8e;
+}
+
+.order-status-failure-filter .arrow-icon {
+  color: #e38e8e;
+}
+
+.order-status-failure-filter .filter-options {
+  border: 1px solid #efc1c1;
+}
+
+.order-status-failure-filter .filter-list:hover {
+  background-color: #f8ecec;
+  border: 1px solid #eecfcf;
+  color: #e38e8e;
+}
+
+.order-status-failure-filter .filter-list:hover .count-badge-item {
+  background-color: #f3dbdb;
+  border: 1px solid #e2b2b2;
+  color: #e38e8e;
+}
+.order-status-failure-filter .count-badge {
+  background-color: #f3dbdb;
+  border: 1px solid #e2b2b2;
+  color: #e38e8e;
+}
